@@ -246,8 +246,7 @@ int main(int argc, char** argv)
 
 	//Waits for execution of alice1 to finish
 	wait(NULL);
-
-	//Send randomly generated numbers by alice1 to bob
+	//Send randomly generated nymbers by alice1 to bob
 	rndm = fopen("randomx.txt", "r");
 
 	fscanf(rndm, "%s", x_0);
@@ -311,7 +310,7 @@ int main(int argc, char** argv)
 	//Close connection with Bob
 	close(bob);
 	printf("Transfer Completed\n");	
-/*
+
 	free(l1);
 	free(l2);
 	free(l3);
@@ -319,5 +318,5 @@ int main(int argc, char** argv)
 	free(e1);
 	free(e2);
 	free(e3);
-	free(e4);*/
+	free(e4);
 }
