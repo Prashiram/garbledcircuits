@@ -310,11 +310,11 @@ int main(int argc, char** argv)
 	//Close connection with Bob
 	close(bob);
 	printf("Transfer Completed\n");	
-
+/*
 	free(l1);
 	free(l2);
 	free(l3);
-	free(l4);
+	free(l4);*/
 	free(e1);
 	free(e2);
 	free(e3);

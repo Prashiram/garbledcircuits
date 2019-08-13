@@ -1,44 +1,34 @@
 /*
-
 This is an implementation of the AES algorithm, specifically ECB, CTR and CBC mode.
 Block size can be chosen in aes.h - available choices are AES128, AES192, AES256.
-
 The implementation is verified against the test vectors in:
   National Institute of Standards and Technology Special Publication 800-38A 2001 ED
-
 ECB-AES128
 ----------
-
   plain-text:
     6bc1bee22e409f96e93d7e117393172a
     ae2d8a571e03ac9c9eb76fac45af8e51
     30c81c46a35ce411e5fbc1191a0a52ef
     f69f2445df4f9b17ad2b417be66c3710
-
   key:
     2b7e151628aed2a6abf7158809cf4f3c
-
   resulting cipher
     3ad77bb40d7a3660a89ecaf32466ef97 
     f5d3d58503b9699de785895a96fdbaaf 
     43b1cd7f598ece23881b00e3ed030688 
     7b0c785e27e8ad3f8223207104725dd4 
-
-
 NOTE:   String length must be evenly divisible by 16byte (str_len % 16 == 0)
         You should pad the end of the string with zeros if this is not the case.
         For AES192/256 the key size is proportionally larger.
-
 */
 
 
 /*****************************************************************************/
 /* Includes:                                                                 */
 /*****************************************************************************/
-//#include <stdio.h>
-#include <stdlib.h>
 #include <stdint.h>
 #include <string.h> // CBC mode, for memset
+#include<stdlib.h>
 #include "aes.h"
 
 /*****************************************************************************/
@@ -224,20 +214,22 @@ static void KeyExpansion(uint8_t* RoundKey, const uint8_t* Key)
   }
 }
 
-void AES_init_ctx(struct AES_ctx* ctx, const uint8_t* key)
+void AES_init_ctx(struct AES_ctx* ctx, uint8_t* key)
 {
   ctx->RoundKey = malloc(AES_keyExpSize*sizeof(uint8_t));
   KeyExpansion(ctx->RoundKey, key);
 }
 #if (defined(CBC) && (CBC == 1)) || (defined(CTR) && (CTR == 1))
-void AES_init_ctx_iv(struct AES_ctx* ctx, const uint8_t* key, const uint8_t* iv)
+void AES_init_ctx_iv(struct AES_ctx* ctx, uint8_t* key, uint8_t* iv)
 {
   ctx->RoundKey = malloc(AES_keyExpSize*sizeof(uint8_t));
+  ctx->Iv = calloc(AES_BLOCKLEN, sizeof(uint8_t));
+  KeyExpansion(ctx->RoundKey, key);
   memcpy (ctx->Iv, iv, AES_BLOCKLEN);
 }
-void AES_ctx_set_iv(struct AES_ctx* ctx, const uint8_t* iv)
+void AES_ctx_set_iv(struct AES_ctx* ctx, uint8_t* iv)
 {
-  ctx->Iv = malloc(AES_BLOCKLEN*sizeof(uint8_t));
+  ctx->Iv = calloc(AES_BLOCKLEN, sizeof(uint8_t));
   memcpy (ctx->Iv, iv, AES_BLOCKLEN);
 }
 #endif
@@ -415,6 +407,7 @@ static void InvShiftRows(state_t* state)
 static void Cipher(state_t* state, const uint8_t* RoundKey)
 {
   uint8_t round = 0;
+
   // Add the First round key to the state before starting the rounds.
   AddRoundKey(0, state, RoundKey); 
   
@@ -486,6 +479,8 @@ void AES_ECB_decrypt(const struct AES_ctx* ctx, uint8_t* buf)
 
 
 
+
+
 #if defined(CBC) && (CBC == 1)
 
 
@@ -501,7 +496,8 @@ static void XorWithIv(uint8_t* buf, const uint8_t* Iv)
 void AES_CBC_encrypt_buffer(struct AES_ctx *ctx, uint8_t* buf, uint32_t length)
 {
   uintptr_t i;
-  uint8_t *Iv = ctx->Iv;
+  uint8_t *Iv = malloc(AES_BLOCKLEN*sizeof(uint8_t));
+  Iv = ctx->Iv;
   for (i = 0; i < length; i += AES_BLOCKLEN)
   {
     XorWithIv(buf, Iv);
@@ -512,7 +508,6 @@ void AES_CBC_encrypt_buffer(struct AES_ctx *ctx, uint8_t* buf, uint32_t length)
   }
   /* store Iv in ctx for next call */
   memcpy(ctx->Iv, Iv, AES_BLOCKLEN);
-
 }
 
 void AES_CBC_decrypt_buffer(struct AES_ctx* ctx, uint8_t* buf,  uint32_t length)
@@ -527,7 +522,6 @@ void AES_CBC_decrypt_buffer(struct AES_ctx* ctx, uint8_t* buf,  uint32_t length)
     memcpy(ctx->Iv, storeNextIv, AES_BLOCKLEN);
     buf += AES_BLOCKLEN;
   }
-//  printf("%s\n", buf);
 
 }
 
@@ -572,4 +566,3 @@ void AES_CTR_xcrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, uint32_t length)
 }
 
 #endif // #if defined(CTR) && (CTR == 1)
-

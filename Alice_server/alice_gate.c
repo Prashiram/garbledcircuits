@@ -13,13 +13,13 @@
 
 int main(){
 	//Files to write the randomly generated keys
-	FILE *alabel = fopen("alabel.txt", "w+");
-	FILE *blabel = fopen("blabel.txt", "w+");
-	FILE *oplabel = fopen("oplabel.txt", "w+");
-	FILE *initvec = fopen("initvec.txt", "w+");
-	FILE *ciph = fopen("ciph.txt", "w+");
-	FILE *hash = fopen("hash.txt", "w+");
-	FILE *keys = fopen("keys.txt", "w+"); //temp
+	FILE *alabel = fopen("alabel.txt", "w");
+	FILE *blabel = fopen("blabel.txt", "w");
+	FILE *oplabel = fopen("oplabel.txt", "w");
+	FILE *initvec = fopen("initvec.txt", "w");
+	FILE *ciph = fopen("ciph.txt", "w");
+	FILE *hash = fopen("hash.txt", "w");
+	FILE *keys = fopen("keys.txt", "w"); //temp
 
 	struct AES_ctx *ctx;
 	ctx = (struct AES_ctx*)malloc(sizeof(struct AES_ctx));
@@ -87,7 +87,6 @@ int main(){
 	//XORing random numbers to generate keys for AES
 	mpz_xor(key1, a0, b0);
 	mpz_ior(key1, key1, key_len); //bitwise or with key_len so that the length is always 128 bits
-	//gmp_printf("key: %Zd\n", key1);
 	mpz_xor(key2, a0, b1);
 	mpz_ior(key2, key2, key_len);
 	mpz_xor(key3, a1, b0);
@@ -126,7 +125,8 @@ int main(){
 	len = strlen(op_0);
 	AES_init_ctx(ctx, k1);
 	AES_ctx_set_iv(ctx, iniv);
-	AES_CBC_encrypt_buffer(ctx, op_0, len);	
+	printf("op_0: %s\n", op_0);
+	AES_CBC_encrypt_buffer(ctx, op_0, 48);	
 	len = strlen(op_0);
 	fprintf(ciph, "%d\n", len);
 	fprintf(ciph, "%s\n", op_0);
@@ -137,7 +137,7 @@ int main(){
 	len = strlen(op_0);
 	AES_init_ctx(ctx, k2);
 	AES_ctx_set_iv(ctx, iniv);
-	AES_CBC_encrypt_buffer(ctx, op_0, len);
+	AES_CBC_encrypt_buffer(ctx, op_0, 48);
 	len = strlen(op_0);
 	fprintf(ciph, "%d\n", len);
 	fprintf(ciph, "%s\n", op_0);
@@ -148,16 +148,17 @@ int main(){
 	len = strlen(op_0);
 	AES_init_ctx(ctx, k3);
 	AES_ctx_set_iv(ctx, iniv);
-	AES_CBC_encrypt_buffer(ctx, op_0, len);
+	AES_CBC_encrypt_buffer(ctx, op_0, 48);
 	len = strlen(op_0);
 	fprintf(ciph, "%d\n", len);
 	fprintf(ciph, "%s\n", op_0);
 
 	op_1 = pad(op_1);
 	len = strlen(op_1);
+	printf("op_0: %s\n", op_1);
 	AES_init_ctx(ctx, k4);
 	AES_ctx_set_iv(ctx, iniv);
-	AES_CBC_encrypt_buffer(ctx, op_1, len);
+	AES_CBC_encrypt_buffer(ctx, op_1, 48);
 	len = strlen(op_1);
 	fprintf(ciph, "%d\n", len);
 	fprintf(ciph, "%s\n", op_1);
@@ -166,9 +167,9 @@ int main(){
 	mpz_get_str(op_0, 10, c0);
 	mpz_get_str(op_1, 10, c1); 
 	len = strlen(op_0);
-	sha3(op_0, len, op_0, 39);
+	sha3(op_0, 39, op_0, 39);
 	len = strlen(op_0);
-	sha3(op_1, len, op_1, 39);
+	sha3(op_1, 39, op_1, 39);
 	fprintf(hash, "%ld\n", strlen(op_0));
 	fprintf(hash, "%s\n", op_0);
 	fprintf(hash, "%ld\n", strlen(op_1));
